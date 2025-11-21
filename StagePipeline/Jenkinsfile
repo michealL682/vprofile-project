@@ -25,6 +25,8 @@ pipeline {
         registryCredential = 'ecr:us-east-1:awscreds'
         appRegistry = '406312601212.dkr.ecr.us-east-1.amazonaws.com/babashopappimg'
         vprofileRegistry = 'https://406312601212.dkr.ecr.us-east-1.amazonaws.com'
+        cluster = "staging-cluster"
+        service = "staging-task-service-6s0g2iyy"
     }
 
     stages {
@@ -114,7 +116,14 @@ pipeline {
                 }
             }
         }
-    }        
+        stage("Deploy to Staging ECS") {
+            steps {
+                withAWS(region: 'us-east-1', credentials: 'awscreds') {
+                    sh 'aws ecs update-service --cluster ${cluster} --service ${service} --force-new-deployment'
+                }
+            }
+        }
+    }
     post {
         always {
             echo 'Slack Notifications.'
